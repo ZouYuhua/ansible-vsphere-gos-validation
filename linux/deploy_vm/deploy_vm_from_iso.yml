@@ -285,7 +285,7 @@
     - name: "Upgrade Oracle Linux 8.x/9.x kernel to latest UEK R7"
       when:
         - guest_os_ansible_distribution == "OracleLinux"
-        - guest_os_ansible_distribution_major_ver in [8, 9]
+        - guest_os_ansible_distribution_major_ver in ['8', '9']
         - "'uek' in guest_os_ansible_kernel"
       block:
         - include_tasks: ../../common/vm_take_snapshot.yml
