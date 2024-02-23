@@ -1,0 +1,66 @@
+# Copyright 2023-2024 VMware, Inc.
+# SPDX-License-Identifier: BSD-2-Clause
+---
+# Rebuild Debian ISO image with unattended install file
+# Parameters:
+#   rebuilt_unattend_iso_path: Local path to the rebuilt ISO image with unattend install config file
+#   src_iso_file_path: Local path of source ISO image file
+#   src_iso_file_dir: Local dir of source ISO image file
+#
+- name: "Extract specific files inside ISO"
+  community.general.iso_extract:
+    image: "{{ src_iso_file_path }}"
+    dest: "{{ src_iso_file_dir }}"
+    files:
+      - 'boot/grub/grub.cfg'
+      - 'md5sum.txt'
+
+# casper command options can be found at https://manpages.ubuntu.com/manpages/jammy/man7/casper.7.html
+- name: "Set fact of boot command options for Ubiquity installer"
+  ansible.builtin.set_fact:
+    ubiquity_boot_options: >-
+      boot=casper fsck.mode=skip debug-ubiquity automatic-ubiquity locale=zh_CN
+      quiet splash noprompt --- console=ttyS0,115200n8
+
+- name: "Add menu entry for autoinstall in boot/grub/grub.cfg"
+  ansible.builtin.blockinfile:
+    path: "{{ src_iso_file_dir }}/grub.cfg"
+    insertbefore: "^menuentry \"Try Kylin-Desktop*."
+    marker: ""
+    block: |
+      menuentry "Automated installation" {
+      linux     /casper/vmlinuz file=/cdrom/preseed/kylin.seed {{ ubiquity_boot_options }}
+      initrd    /casper/initrd.lz
+      }
+
+- name: "Update md5sum for Debian ISO files"
+  ansible.builtin.shell: "{{ item }}"
+  with_items:
+    - "sed -i '#./boot/grub/grub.cfg#d' md5sum.txt"
+    - "echo \"`md5sum grub.cfg | awk '{print $1}'` ./boot/grub/grub.cfg\" >>md5sum.txt"
+  args:
+    chdir: "{{ src_iso_file_dir }}"
+  register: update_md5sum_result
+
+- name: "Print command output for updating files' md5sum"
+  ansible.builtin.debug: var=update_md5sum_result
+
+- name: "Set facts of files to be updated or added into Ubuntu ISO"
+  ansible.builtin.set_fact:
+    update_iso_files:
+      - src_file: "{{ src_iso_file_dir }}/grub.cfg"
+        dest_file: "/boot/grub/grub.cfg"
+      - src_file: "{{ src_iso_file_dir }}/md5sum.txt"
+        dest_file: "/md5sum.txt"
+      - src_file: "{{ new_unattend_install_conf }}"
+        dest_file: "/preseed/kylin.seed"
+      - src_file: "{{ src_iso_file_dir }}/{{ pre_install_script_file }}"
+        dest_file: "/preseed/{{ pre_install_script_file }}"
+      - src_file: "{{ src_iso_file_dir }}/{{ post_install_script_file }}"
+        dest_file: "/preseed/{{ post_install_script_file }}"
+
+- name: "Rebuild ISO for Kylin Desktop with Ubiquity installer"
+  community.general.iso_customize:
+    src_iso: "{{ src_iso_file_path }}"
+    dest_iso: "{{ rebuilt_unattend_iso_path }}"
+    add_files: "{{ update_iso_files }}"

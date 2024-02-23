@@ -1,0 +1,73 @@
+### Step 1 : Localization
+#d-i debian-installer/locale string en_US
+d-i debian-installer/language string en
+ubiquity languagechooser/language-name select English (US)
+ubiquity countrychooser/shortlist select US
+ubiquity localechooser/supported-locales multiselect en_US.UTF8
+
+### Step 2 : Read License
+### Step 3 : Time/Zone
+d-i time/zone string US/Eastern
+d-i clock-setup/utc-auto boolean true
+d-i clock-setup/utc boolean true
+
+### Step 4 : Install way
+### Step 5 : Disk
+ubiquity partman-auto/method string regular
+ubiquity partman-auto/choose_recipe select atomic
+
+# This makes partman automatically partition without confirmation
+d-i partman-partitioning/confirm_write_new_label boolean true
+d-i partman/choose_partition select finish
+d-i partman/confirm boolean true
+d-i partman/confirm_nooverwrite boolean true
+
+### Step 6 Account setup. I should create a normal user and it can't user "root"
+{% if new_user is defined and new_user != 'root' %}
+d-i passwd/user-fullname string {{ new_user }}
+d-i passwd/username string {{ new_user }}
+{% endif %}
+d-i passwd/user-password-crypted password {{ vm_password_md5 }}
+d-i passwd/auto-login boolean true
+d-i user-setup/encrypt-home boolean false
+d-i passwd/root-login boolean true
+d-i passwd/root-password-crypted password {{ vm_password_md5 }}
+d-i user-setup/allow-password-weak boolean true
+
+# Package selection
+d-i pkgsel/language-packs multiselect en, zh
+d-i pkgsel/update-policy select none
+d-i pkgsel/upgrade select none
+
+# By default, the system's locate database will be updated after the
+# installer has finished installing most packages. This may take a while, so
+# if you don't want it, you can set this to "false" to turn it off.
+d-i pkgsel/updatedb boolean false
+
+d-i finish-install/keep-consoles boolean true
+# Bootloader
+# This is fairly safe to set, it makes grub install automatically to the MBR
+# if no other operating system is detected on the machine.
+d-i grub-installer/only_debian boolean true
+
+# This first command is run as early as possible, just after
+# preseeding is read.
+d-i preseed/early_command string \
+    echo "Executing early command" >/dev/ttyS0; \
+    cp -a /root/cdrom/preseed/{{ pre_install_script_file }} /root/{{ pre_install_script_file }}; \
+    /bin/sh /root/{{ pre_install_script_file }} >/dev/ttyS0;
+
+# Execute post install script on success
+ubiquity ubiquity/success_command \
+    echo "Executing Ubiquity success command" >/dev/ttyS0; \
+    cp -a /cdrom/preseed/{{ post_install_script_file }} /target/root/{{ post_install_script_file }}; \
+    in-target /bin/bash /root/{{ post_install_script_file }}; \
+    echo "Dump installer log:" >/dev/ttyS0; \
+    cat /var/log/syslog >/dev/ttyS0; \
+    echo "{{ autoinstall_complete_msg }}" >/dev/ttyS0;
+
+d-i finish-install/reboot_in_progress note
+d-i cdrom-detect/eject boolean true
+
+ubiquity ubiquity/summary note
+ubiquity ubiquity/poweroff boolean true
