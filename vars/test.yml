@@ -187,7 +187,7 @@ cpu_cores_per_socket: 2
 firmware: "efi"
 # Boot disk controller type valid value 'paravirtual', 'lsilogic', 'buslogic', 'lsilogicsas', 'nvme', 'sata' or 'ide'.
 boot_disk_controller: "paravirtual"
-boot_disk_size_gb: 40
+boot_disk_size_gb: 60
 # Valid value is 'vmxnet3' or 'e1000e'.
 # For Windows VM, use 'e1000e' by default when 'windows_has_inbox_driver' parameter is not set
 # or set to false.
