@@ -43,7 +43,7 @@
   ansible.builtin.set_fact:
     autoinstall_start_msg: "Autoinstall is started."
     autoinstall_ipv4_msg: "IPv4-address="
-  when: unattend_installer in ["Ubuntu-Ubiquity", "Ubuntu-Subiquity", "Debian", "Pardus", "FreeBSD", "Agama"]
+  when: unattend_installer in ["Ubuntu-Ubiquity", "Ubuntu-Subiquity", "Debian", "Pardus", "FreeBSD", "Agama", "Kylin_Desktop"]
 
 # unattend_install_conf is not for Ubuntu Server, Ubuntu Desktop 23.04 and later
 - name: "Create unattend install ISO for {{ unattend_installer }}"
