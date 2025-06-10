@@ -16,7 +16,7 @@
       - 'md5sum.txt'
 
 # casper command options can be found at https://manpages.ubuntu.com/manpages/jammy/man7/casper.7.html
-- name: "Set fact of boot command options for Ubiquity installer"
+- name: "Set fact of boot command options for Kylin desktop"
   ansible.builtin.set_fact:
     ubiquity_boot_options: >-
       boot=casper fsck.mode=skip debug-ubiquity automatic-ubiquity locale=zh_CN
@@ -45,7 +45,7 @@
 - name: "Print command output for updating files' md5sum"
   ansible.builtin.debug: var=update_md5sum_result
 
-- name: "Set facts of files to be updated or added into Ubuntu ISO"
+- name: "Set facts of files to be updated or added into Kylin desktop ISO"
   ansible.builtin.set_fact:
     update_iso_files:
       - src_file: "{{ src_iso_file_dir }}/grub.cfg"
@@ -59,7 +59,7 @@
       - src_file: "{{ src_iso_file_dir }}/{{ post_install_script_file }}"
         dest_file: "/preseed/{{ post_install_script_file }}"
 
-- name: "Rebuild ISO for Kylin Desktop with Ubiquity installer"
+- name: "Rebuild ISO for Kylin Desktop"
   community.general.iso_customize:
     src_iso: "{{ src_iso_file_path }}"
     dest_iso: "{{ rebuilt_unattend_iso_path }}"
