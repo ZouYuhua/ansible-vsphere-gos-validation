@@ -7,18 +7,18 @@
 #   src_iso_file_path: Local path of source ISO image file
 #   src_iso_file_dir: Local dir of source ISO image file
 #
-- name: "Extract specific files inside ISO"
+- name: "Extract boot config file boot/grub/grub.cfg and md5sum.txt from ISO"
   community.general.iso_extract:
     image: "{{ src_iso_file_path }}"
-    dest: "{{ src_iso_file_dir }}"
+    dest: "{{ src_iso_dir_path }}"
     files:
-      - 'boot/grub/grub.cfg'
-      - 'md5sum.txt'
+      - "boot/grub/grub.cfg"
+      - "md5sum.txt"
 
 # casper command options can be found at https://manpages.ubuntu.com/manpages/jammy/man7/casper.7.html
 - name: "Set fact of boot command options for Kylin desktop"
   ansible.builtin.set_fact:
-    ubiquity_boot_options: >-
+    kylin_boot_options: >-
       boot=casper fsck.mode=skip debug-ubiquity automatic-ubiquity locale=zh_CN
       quiet splash noprompt --- console=ttyS0,115200n8
 
@@ -29,7 +29,7 @@
     marker: ""
     block: |
       menuentry "Automated installation" {
-      linux     /casper/vmlinuz file=/cdrom/preseed/kylin.seed {{ ubiquity_boot_options }}
+      linux     /casper/vmlinuz file=/cdrom/preseed/kylin.seed {{ kylin_boot_options }}
       initrd    /casper/initrd.lz
       }
 
