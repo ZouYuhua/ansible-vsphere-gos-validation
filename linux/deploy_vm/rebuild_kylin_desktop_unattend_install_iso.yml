@@ -5,7 +5,7 @@
 # Parameters:
 #   rebuilt_unattend_iso_path: Local path to the rebuilt ISO image with unattend install config file
 #   src_iso_file_path: Local path of source ISO image file
-#   src_iso_file_dir: Local dir of source ISO image file
+#   src_iso_dir_path: Local dir of source ISO image file
 #
 - name: "Extract boot config file boot/grub/grub.cfg and md5sum.txt from ISO"
   community.general.iso_extract:
@@ -24,7 +24,7 @@
 
 - name: "Add menu entry for autoinstall in boot/grub/grub.cfg"
   ansible.builtin.blockinfile:
-    path: "{{ src_iso_file_dir }}/grub.cfg"
+    path: "{{ src_iso_dir_path }}/grub.cfg"
     insertbefore: "^menuentry \"Try Kylin-Desktop*."
     marker: ""
     block: |
@@ -39,7 +39,7 @@
     - "sed -i '#./boot/grub/grub.cfg#d' md5sum.txt"
     - "echo \"`md5sum grub.cfg | awk '{print $1}'` ./boot/grub/grub.cfg\" >>md5sum.txt"
   args:
-    chdir: "{{ src_iso_file_dir }}"
+    chdir: "{{ src_iso_dir_path }}"
   register: update_md5sum_result
 
 - name: "Print command output for updating files' md5sum"
@@ -48,15 +48,15 @@
 - name: "Set facts of files to be updated or added into Kylin desktop ISO"
   ansible.builtin.set_fact:
     update_iso_files:
-      - src_file: "{{ src_iso_file_dir }}/grub.cfg"
+      - src_file: "{{ src_iso_dir_path }}/grub.cfg"
         dest_file: "/boot/grub/grub.cfg"
-      - src_file: "{{ src_iso_file_dir }}/md5sum.txt"
+      - src_file: "{{ src_iso_dir_path }}/md5sum.txt"
         dest_file: "/md5sum.txt"
       - src_file: "{{ new_unattend_install_conf }}"
         dest_file: "/preseed/kylin.seed"
-      - src_file: "{{ src_iso_file_dir }}/{{ pre_install_script_file }}"
+      - src_file: "{{ src_iso_dir_path }}/{{ pre_install_script_file }}"
         dest_file: "/preseed/{{ pre_install_script_file }}"
-      - src_file: "{{ src_iso_file_dir }}/{{ post_install_script_file }}"
+      - src_file: "{{ src_iso_dir_path }}/{{ post_install_script_file }}"
         dest_file: "/preseed/{{ post_install_script_file }}"
 
 - name: "Rebuild ISO for Kylin Desktop"
