@@ -7,7 +7,7 @@
   ansible.builtin.set_fact:
     pre_install_script_file: "preseed_early_command.sh"
     post_install_script_file: "preseed_late_command.sh"
-  when: unattend_installer in ['Ubuntu-Ubiquity', "Debian", "Pardus"]
+  when: unattend_installer in ['Ubuntu-Ubiquity', "Debian", "Pardus", "Kylin_Desktop"]
 
 - name: "Create OS pre-install script"
   ansible.builtin.template:
