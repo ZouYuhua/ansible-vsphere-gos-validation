@@ -15,7 +15,7 @@ d-i clock-setup/utc boolean true
 ### Step 5 : Disk
 
 # Explicitly select disk
-ubiquity partman-auto/disk string /dev/sda
+ubiquity partman-auto/disk string /dev/nvme0n1
 
 # Auto-partition with atomic recipe (all-in-one partition)
 ubiquity partman-auto/method string regular
