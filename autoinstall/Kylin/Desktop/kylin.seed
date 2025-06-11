@@ -15,6 +15,7 @@ d-i clock-setup/utc boolean true
 ### Step 5 : Disk
 ubiquity partman-auto/method string regular
 ubiquity partman-auto/choose_recipe select atomic
+ubiquity partman-auto/disk string /dev/sda
 
 # This makes partman automatically partition without confirmation
 d-i partman-partitioning/confirm_write_new_label boolean true
