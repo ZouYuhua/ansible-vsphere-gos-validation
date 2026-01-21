@@ -1,6 +1,4 @@
 ### Step 1 : Localization
-##d-i debian-installer/locale string en_US
-##d-i debian-installer/language string en
 d-i debian-installer/language string zh_CN
 
 ### Select Kylin Desktop Edition 
@@ -35,13 +33,14 @@ d-i netcfg/get_hostname string kylin-desktop
 {% if new_user is defined and new_user != 'root' %}
 d-i passwd/user-fullname string {{ new_user }}
 d-i passwd/username string {{ new_user }}
-{% endif %}
 d-i passwd/user-password-crypted password {{ vm_password_md5 }}
+# The user account will be added to some standard initial groups. To
+# override that, use this.
+d-i passwd/user-default-groups string {{ new_user }} root wheel
 d-i passwd/auto-login boolean true
-d-i user-setup/encrypt-home boolean false
+{% endif %}
 d-i passwd/root-login boolean true
 d-i passwd/root-password-crypted password {{ vm_password_md5 }}
-d-i user-setup/allow-password-weak boolean true
 
 # Choose Applications
 d-i pkgsel/include string openssh-server
