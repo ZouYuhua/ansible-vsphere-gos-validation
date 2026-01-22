@@ -69,8 +69,6 @@
       - device_type: "{{ network_adapter_type | default('vmxnet3') }}"
         name: "{{ vm_network_name | default('VM Network') }}"
         type: "dhcp"
-    video_card:
-      video_memory_mb: 8
   register: vm_create_result
 
 - name: "Display the result of new VM creation"
