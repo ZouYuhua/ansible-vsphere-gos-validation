@@ -47,7 +47,8 @@
     src_iso: "{{ src_iso_file_path }}"
     dest_iso: "{{ src_iso_file_path }}"
     delete_files:
-      - "{{ dest_boot_loader_conf }}"
+      - "/etc/installerconfig"
+  ignore_errors: true
 
 - name: "Rebuild ISO image file for FreeBSD"
   community.general.iso_customize:
