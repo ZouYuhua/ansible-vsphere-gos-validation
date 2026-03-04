@@ -44,10 +44,10 @@
 
 - name: "Delete boot loader configure file in ISO image for FreeBSD 14"
   community.general.iso_customize:
-      src_iso: "{{ src_iso_file_path }}"
-      dest_iso: "{{ src_iso_file_path }}"
-      delete_files:
-        - "{{ dest_boot_loader_conf }}"
+    src_iso: "{{ src_iso_file_path }}"
+    dest_iso: "{{ src_iso_file_path }}"
+    delete_files:
+      - "{{ dest_boot_loader_conf }}"
 
 - name: "Rebuild ISO image file for FreeBSD"
   community.general.iso_customize:
