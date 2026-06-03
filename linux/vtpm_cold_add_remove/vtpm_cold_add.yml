@@ -4,6 +4,17 @@
 - name: "Handle VM without vTPM device situation"
   when: not vm_with_vtpm
   block:
+    # workaround: Fail to boot up after add vTPM on ubuntu 26.04 server
+    - name: "Replace BOOTX64.EFI with grubx64.efi"
+      ansible.builtin.shell: |
+        cp -f /boot/efi/EFI/BOOT/BOOTX64.EFI /boot/efi/EFI/BOOT/BOOTX64.EFI.bak
+        cp -f /boot/efi/EFI/ubuntu/grubx64.efi /boot/efi/EFI/BOOT/BOOTX64.EFI
+      delegate_to: "{{ vm_guest_ip }}"
+      when:
+        - guest_os_ansible_distribution == "Ubuntu"
+        - guest_os_edition == "Server"
+        - guest_os_ansible_distribution_ver is version('26.04', '>=')
+
     - name: "Power off instant cloned VM"
       include_tasks: ../../common/vm_set_power_state.yml
       vars:
