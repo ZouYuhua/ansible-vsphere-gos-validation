@@ -1,6 +1,8 @@
 #cloud-config
 autoinstall:
   version: 1
+  package_update: true
+  package_upgrade: true
   early-commands:
     - echo '{{ autoinstall_start_msg }}' >/dev/ttyS0
     - echo 'The network interface name is' $(ip -br link show | grep -v lo | awk '{print $1}') >/dev/ttyS0
