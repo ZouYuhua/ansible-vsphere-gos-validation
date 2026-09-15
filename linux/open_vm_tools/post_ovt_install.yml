@@ -7,6 +7,13 @@
     - enable_local_dvd_repo is defined
     - enable_local_dvd_repo | bool
 
+- name: "Upgrade ubuntu desktop 24.04.4 to 24.04.5"
+  ansible.builtin.shell: |
+    apt-get update -y
+    apt-get dist-upgrade -y
+    sudo apt-get autoremove -y
+  delegate_to: "{{ vm_guest_ip }}"
+
 - name: "Reboot guest OS"
   include_tasks: ../utils/reboot.yml
 

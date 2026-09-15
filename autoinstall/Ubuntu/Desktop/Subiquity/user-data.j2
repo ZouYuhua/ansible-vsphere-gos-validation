@@ -52,8 +52,6 @@ autoinstall:
     preserve_sources_list: false
     geoip: true
   late-commands:
-    - chroot /target apt-get update -y
-    - chroot /target apt-get dist-upgrade -y
     - rm -f /etc/cloud/cloud.cfg.d/*-installer.cfg 2>/dev/null
     - sed -i 's/^#PermitRootLogin .*/PermitRootLogin yes/' /target/etc/ssh/sshd_config
     - sed -i 's/^#PasswordAuthentication .*/PasswordAuthentication yes/' /target/etc/ssh/sshd_config
