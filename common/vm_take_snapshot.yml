@@ -29,20 +29,26 @@
   block:
     - name: "Get VM's all snapshots"
       include_tasks: vm_get_snapshot_facts.yml
+
+    - name: "Get current snapshot fact"
+      ansible.builtin.set_fact:
+        current_snapshot_fact: "{{ (vm_snapshot_facts.flat_snapshots | selectattr('is_current', 'equalto', true) | first) | default({}, true) }}"
+      when:
+        - vm_snapshot_facts is defined
+        - vm_snapshot_facts.flat_snapshots is defined
+
     - name: "Check VM snapshot is taken and is the current one"
       ansible.builtin.assert:
         that:
-          - vm_snapshot_facts is defined
-          - vm_snapshot_facts.guest_snapshots is defined
-          - vm_snapshot_facts.guest_snapshots.current_snapshot is defined
-          - vm_snapshot_facts.guest_snapshots.current_snapshot.name is defined
-          - vm_snapshot_facts.guest_snapshots.current_snapshot.name == snapshot_name
+          - current_snapshot_fact is defined
+          - current_snapshot_fact | map(attribute='name') == snapshot_name
         fail_msg: "Failed to take snapshot '{{ snapshot_name }}' on VM '{{ vm_name }}'."
         success_msg: "Take snapshot '{{ snapshot_name }}' on VM '{{ vm_name }}' succeed."
+
     - name: "Check VM snapshot took is quiesced snapshot"
       ansible.builtin.assert:
         that:
-          - vm_snapshot_facts.guest_snapshots.current_snapshot.quiesced is defined
-          - vm_snapshot_facts.guest_snapshots.current_snapshot.quiesced | bool
+          - current_snapshot_fact.quiesced is defined
+          - current_snapshot_fact.quiesced | bool
         fail_msg: "Snapshot '{{ snapshot_name }}' quiesced status is false."
       when: is_quiesce | default(false) | bool

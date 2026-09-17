@@ -13,7 +13,7 @@
   when: expected_snapshot_wait_time is undefined or not expected_snapshot_wait_time
 
 - name: "Wait for current snapshot becomes '{{ expected_snapshot_name }}'"
-  community.vmware.vmware_guest_snapshot_info:
+  vmware.vmware.vm_snapshot_info:
     hostname: "{{ vsphere_host_name }}"
     username: "{{ vsphere_host_user }}"
     password: "{{ vsphere_host_user_password }}"
@@ -23,7 +23,7 @@
     name: "{{ vm_name }}"
   register: vm_snapshot_facts
   until:
-    - vm_snapshot_facts.guest_snapshots.current_snapshot.name | default('') == expected_snapshot_name
+    - (vm_snapshot_facts.flat_snapshots | selectattr('is_current', 'equalto', true) | map(attribute='name') | first) | default('') == expected_snapshot_name
   retries: "{{ (expected_snapshot_wait_time | int / 3) | int }}"
   delay: 3
   ignore_errors: true
@@ -36,10 +36,9 @@
   ansible.builtin.assert:
     that:
       - vm_snapshot_facts is defined
-      - vm_snapshot_facts.guest_snapshots is defined
-      - vm_snapshot_facts.guest_snapshots.current_snapshot is defined
-      - vm_snapshot_facts.guest_snapshots.current_snapshot.name == expected_snapshot_name
+      - vm_snapshot_facts.flat_snapshots is defined
+      - (vm_snapshot_facts.flat_snapshots | selectattr('is_current', 'equalto', true) | map(attribute='name') | first) == expected_snapshot_name
     fail_msg: >-
       It's timed out to wait for current snapshot becoming expected '{{ expected_snapshot_name }}'
       in {{ expected_snapshot_wait_time }} seconds.
-      Current snapshot name is '{{ vm_snapshot_facts.guest_snapshots.current_snapshot.name | default("") }}'.
+      Current snapshot name is '{{ (vm_snapshot_facts.flat_snapshots | selectattr('is_current', 'equalto', true) | map(attribute='name') | first) | default("") }}'.
