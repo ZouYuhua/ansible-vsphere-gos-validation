@@ -27,7 +27,7 @@
     fail_msg: "Parameter 'kms_info_list' is required and set to the list of dict with keys 'kms_name', 'kms_ip' when adding new Standard key provider."
 
 - name: "Add standard key provider to vCenter"
-  community.vmware.vcenter_standard_key_provider:
+  vmware.vmware.vcenter_standard_key_provider:
     hostname: "{{ vsphere_host_name }}"
     username: "{{ vsphere_host_user }}"
     password: "{{ vsphere_host_user_password }}"

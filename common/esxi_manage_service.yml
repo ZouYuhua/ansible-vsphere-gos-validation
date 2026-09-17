@@ -25,7 +25,7 @@
       esxi_service_policy={{ esxi_service_policy | default('undefined') }}.
 
 - name: "Manage service '{{ esxi_service_name }}' on ESXi server"
-  community.vmware.vmware_host_service_manager:
+  vmware.vmware.host_service_manager:
     hostname: "{{ vsphere_host_name }}"
     username: "{{ vsphere_host_user }}"
     password: "{{ vsphere_host_user_password }}"

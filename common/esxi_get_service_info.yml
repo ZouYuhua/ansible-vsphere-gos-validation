@@ -21,7 +21,7 @@
     esxi_service_info: {}
 
 - name: "Gather services information on ESXi server"
-  community.vmware.vmware_host_service_info:
+  vmware.vmware.host_service_info:
     hostname: "{{ vsphere_host_name }}"
     username: "{{ vsphere_host_user }}"
     password: "{{ vsphere_host_user_password }}"
