@@ -17,7 +17,7 @@
 
 - name: Set fact of the number of snapshots
   ansible.builtin.set_fact:
-    snapshots_num: "{{ vm_snapshot_facts.flat_snapshots | length if (not vm_snapshot_facts.failed and vm_snapshot_facts.flat_snapshots | length != 0) else 0 }}"
+    snapshots_num: "{{ vm_snapshot_facts.snapshots | length if (not vm_snapshot_facts.failed and vm_snapshot_facts.snapshots | length != 0) else 0 }}"
 
 # Do nothing if no snapshot exists
 - ansible.builtin.debug:
@@ -30,7 +30,7 @@
         msg: "The number of existing snapshots: {{ snapshots_num }}"
     - name: Set fact of the current snapshot
       ansible.builtin.set_fact:
-        current_snapshot_name: "{{ vm_snapshot_facts.flat_snapshots | selectattr('is_current', 'equalto', true) | map(attribute='name') | first }}"
+        current_snapshot_name: "{{ vm_snapshot_facts.snapshots.current_snapshot.name }}"
     - ansible.builtin.debug:
         msg: "Current snapshot is: {{ current_snapshot_name }}"
     - block:
@@ -41,7 +41,7 @@
           ansible.builtin.set_fact:
             revert_to_snapshot_exists: true
           when: item.name == revert_to_snapshot_name
-          with_items: "{{ vm_snapshot_facts.flat_snapshots }}"
+          with_items: "{{ vm_snapshot_facts.snapshots }}"
         - ansible.builtin.debug:
             msg: "Revert to snapshot '{{ revert_to_snapshot_name }}' exists: {{ revert_to_snapshot_exists }}"
         - name: Cleanup snapshots failed
