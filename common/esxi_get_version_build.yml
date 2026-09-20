@@ -8,12 +8,12 @@
     esxi_build: 'N/A'
     esxi_update_version: 'N/A'
 - name: "Get ESXi server product info"
-  community.vmware.vmware_host_facts:
+  vmware.vmware.esxi_info:
     hostname: "{{ vsphere_host_name }}"
     username: "{{ vsphere_host_user }}"
     password: "{{ vsphere_host_user_password }}"
     validate_certs: "{{ validate_certs | default(false) }}"
-    esxi_hostname: "{{ esxi_hostname }}"
+    esxi_host_name: "{{ esxi_hostname }}"
     schema: vsphere
     properties:
       - config.product.version
