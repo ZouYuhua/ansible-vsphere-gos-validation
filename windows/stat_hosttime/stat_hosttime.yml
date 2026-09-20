@@ -47,7 +47,7 @@
           ignore_unreachable: true
           poll: 0
 
-        # At the same time, get ESXi host time by Ansible module vmware.vmware.esxi_info
+        # At the same time, get ESXi host time by Ansible module community.vmware.vmware_host_facts
         - name: "Get real host time on {{ esxi_hostname }}"
           include_tasks: ../../common/esxi_get_host_facts.yml
 
