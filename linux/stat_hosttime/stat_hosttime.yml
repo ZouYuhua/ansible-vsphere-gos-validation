@@ -30,7 +30,7 @@
           delegate_to: "{{ vm_guest_ip }}"
           poll: 0
 
-        # At the same time, get ESXi host time by Ansible module community.vmware.vmware_host_facts
+        # At the same time, get ESXi host time by Ansible module vmware.vmware.esxi_info
         - name: "Get real host time on {{ esxi_hostname }}"
           include_tasks: ../../common/esxi_get_host_facts.yml
 
