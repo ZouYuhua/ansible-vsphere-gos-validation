@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 ---
 - name: "Gather ESXi host facts"
-  vmware.vmware.esxi_info:
+  community.vmware.vmware_host_facts:
     hostname: "{{ esxi_hostname }}"
     username: "{{ esxi_username }}"
     password: "{{ esxi_password }}"

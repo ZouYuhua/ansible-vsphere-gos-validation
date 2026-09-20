@@ -8,27 +8,13 @@
     esxi_build: 'N/A'
     esxi_update_version: 'N/A'
 
-- name: "to be deleted: Get ESXi server product info"
-  vmware.vmware.esxi_info:
-    hostname: "{{ vsphere_host_name }}"
-    username: "{{ vsphere_host_user }}"
-    password: "{{ vsphere_host_user_password }}"
-    validate_certs: "{{ validate_certs | default(false) }}"
-    esxi_host_name: "{{ esxi_hostname }}"
-    schema: vsphere
-  register: tmp_gather_host_facts_result
-  ignore_errors: true
-
-- name: "to be delete: Display the ESXi host facts"
-  ansible.builtin.debug: var=tmp_gather_host_facts_result
-
 - name: "Get ESXi server product info"
-  vmware.vmware.esxi_info:
+  community.vmware.vmware_host_facts:
     hostname: "{{ vsphere_host_name }}"
     username: "{{ vsphere_host_user }}"
     password: "{{ vsphere_host_user_password }}"
     validate_certs: "{{ validate_certs | default(false) }}"
-    esxi_host_name: "{{ esxi_hostname }}"
+    esxi_hostname: "{{ esxi_hostname }}"
     schema: vsphere
     properties:
       - config.product.version
@@ -43,15 +29,15 @@
   block:
     - name: "Set fact of the ESXi server version and build number"
       ansible.builtin.set_fact:
-        esxi_version: "{{ gather_host_facts_result.hosts[0].summary.config.product.version }}"
-        esxi_build: "{{ gather_host_facts_result.hosts[0].summary.config.product.build }}"
+        esxi_version: "{{ gather_host_facts_result.ansible_facts.config.product.version }}"
+        esxi_build: "{{ gather_host_facts_result.ansible_facts.config.product.build }}"
 
     - name: "Get ESXi server update version"
       when: esxi_version is version('7.0.0', '<')
       block:
         - name: "Looking for ESXi update level in host config options"
           ansible.builtin.set_fact:
-            esxi_update_level: "{{ gather_host_facts_result.hosts[0].config.option | selectattr('key', 'equalto', 'Misc.HostAgentUpdateLevel') }}"
+            esxi_update_level: "{{ gather_host_facts_result.ansible_facts.config.option | selectattr('key', 'equalto', 'Misc.HostAgentUpdateLevel') }}"
 
         - name: "Set fact of the ESXi server update version"
           ansible.builtin.set_fact:
