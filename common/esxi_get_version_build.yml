@@ -43,15 +43,15 @@
   block:
     - name: "Set fact of the ESXi server version and build number"
       ansible.builtin.set_fact:
-        esxi_version: "{{ gather_host_facts_result.esxi_info[esxi_hostname].config.product.version }}"
-        esxi_build: "{{ gather_host_facts_result.esxi_info[esxi_hostname].config.product.build }}"
+        esxi_version: "{{ gather_host_facts_result.hosts[0].summary.config.product.version }}"
+        esxi_build: "{{ gather_host_facts_result.hosts[0].summary.config.product.build }}"
 
     - name: "Get ESXi server update version"
       when: esxi_version is version('7.0.0', '<')
       block:
         - name: "Looking for ESXi update level in host config options"
           ansible.builtin.set_fact:
-            esxi_update_level: "{{ gather_host_facts_result.esxi_info[esxi_hostname].config.option | selectattr('key', 'equalto', 'Misc.HostAgentUpdateLevel') }}"
+            esxi_update_level: "{{ gather_host_facts_result.hosts[0].config.option | selectattr('key', 'equalto', 'Misc.HostAgentUpdateLevel') }}"
 
         - name: "Set fact of the ESXi server update version"
           ansible.builtin.set_fact:
