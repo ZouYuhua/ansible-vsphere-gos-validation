@@ -27,9 +27,10 @@ local nicName = agama.findByID(agama.lshw, 'network').logicalname;
     id: "openSUSE_Leap"
   },
   software: {
-    patterns: {
-      add: ["gnome"]
-    }
+    packages: [
+      "open-vm-tools",
+      "open-vm-tools-desktop"
+    ]
   },
 {% if new_user is defined and new_user %}
   user: {
