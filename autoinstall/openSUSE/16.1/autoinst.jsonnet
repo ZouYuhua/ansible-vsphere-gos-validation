@@ -107,6 +107,25 @@ local nicName = agama.findByID(agama.lshw, 'network').logicalname;
           echo "Execute post-install script" >/dev/ttyS0
           echo "Config SSHd to permit root login" >/dev/ttyS0
           echo "PermitRootLogin yes" >/etc/ssh/sshd_config.d/10_root_login.conf
+
+          echo "Install GNOME desktop environment" >/dev/ttyS0
+          mkdir -p /mnt/tmp/dvd
+          for dev in /dev/sr0 /dev/sr1; do
+              mount -o ro "$dev" /mnt/tmp/dvd 2>/dev/null
+              dvd_repo=$(find /mnt/tmp/dvd -name repodata -exec dirname {} \; 2>/dev/null | head -1)
+              [ -n "$dvd_repo" ] && break
+              umount /mnt/tmp/dvd 2>/dev/null
+          done
+
+          if [ -n "$dvd_repo" ]; then
+              chroot /mnt zypper --no-refresh ar -f -c "file://${dvd_repo#/mnt}" dvd >/dev/ttyS0 2>&1
+              chroot /mnt zypper --no-gpg-checks in -y --no-recommends -t pattern gnome >/dev/ttyS0 2>&1 || \
+                chroot /mnt zypper --no-gpg-checks in -y --no-recommends gdm gnome-shell >/dev/ttyS0 2>&1 || true
+              chroot /mnt zypper rr dvd >/dev/ttyS0 2>&1
+              umount /mnt/tmp/dvd 2>/dev/null
+          fi
+          rmdir /mnt/tmp/dvd 2>/dev/null
+
           echo "{{ autoinstall_complete_msg }}" >/dev/ttyS0
         |||
       }
