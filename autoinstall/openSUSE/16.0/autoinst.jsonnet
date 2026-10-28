@@ -29,7 +29,12 @@ local nicName = agama.findByID(agama.lshw, 'network').logicalname;
   software: {
     patterns: {
       add: ["gnome"]
-    }
+    },
+    packages: [
+      "tpm2-tss-engine-devel",
+      "tpm2.0-tools",
+      "tpm2.0-abrmd"
+    ]
   },
 {% if new_user is defined and new_user %}
   user: {
