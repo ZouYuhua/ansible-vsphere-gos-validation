@@ -10,6 +10,13 @@
   vars:
     adapter_type: "pvrdma"
   tasks:
+    - name: "Initialize PVRDMA test state"
+      ansible.builtin.set_fact:
+        pvrdma_host_lock_result: {}
+        pvrdma_server_adapter_pending: false
+        pvrdma_client_vm_exists: false
+        pvrdma_client_vm_under_test: false
+
     - name: "Test case block"
       block:
         - name: "Test setup"
@@ -24,6 +31,18 @@
           include_tasks: ../../common/network_testbed_setup.yml
           vars:
             network_testbed_type: 'vds'
+
+        # Serialize independent jobs before changing host-wide PVRDMA settings.
+        # Never steal an existing lock; interrupted runs require manual cleanup.
+        - name: "Wait for exclusive PVRDMA access on the ESXi host"
+          ansible.builtin.raw: mkdir /tmp/gosv-pvrdma-network-device-ops.lock
+          args:
+            executable: "{{ esxi_shell }}"
+          delegate_to: "{{ esxi_hostname }}"
+          register: pvrdma_host_lock_result
+          until: pvrdma_host_lock_result.rc == 0
+          retries: 720
+          delay: 10
 
         - name: "Tag VMkernel adapter and enable firewall rule on ESXi host for PVRDMA communication"
           include_tasks: ../../common/esxi_enable_pvrdma_configs.yml
@@ -76,6 +95,10 @@
             network_env_nic_ip: "{{ network_env_nic_ip | ansible.utils.ipmath(2) }}"
 
         # On server VM
+        - name: "Mark the server PVRDMA adapter for cleanup"
+          ansible.builtin.set_fact:
+            pvrdma_server_adapter_pending: true
+
         - name: "Hot add a new {{ adapter_type }} network adapter on server VM and apply network config"
           include_tasks: hot_add_network_adapter.yml
           vars:
@@ -115,8 +138,9 @@
           vars:
             new_network_adapter_mac: "{{ new_nic_mac_addr }}"
 
-        - name: "Remove VMkernel adapter tag and disable firewall rule for PVRDMA communication"
-          include_tasks: ../../common/esxi_disable_pvrdma_configs.yml
+        - name: "Mark the server PVRDMA adapter as removed"
+          ansible.builtin.set_fact:
+            pvrdma_server_adapter_pending: false
       rescue:
         - name: "Switch to server VM"
           ansible.builtin.set_fact:
@@ -142,11 +166,29 @@
         - name: "Collect server VM information at test failure"
           include_tasks: ../../common/test_rescue.yml
       always:
-        - name: "Clean up client VM"
-          include_tasks: ../../common/vm_remove.yml
-          vars:
-            vm_name: "{{ pvrdma_client_vm_name }}"
-            vm_remove_ignore_errors: true
-          when:
-            - pvrdma_client_vm_exists is defined
-            - pvrdma_client_vm_exists | bool
+        - name: "Clean up PVRDMA testing before releasing the host lock"
+          when: pvrdma_host_lock_result.rc | default(1) == 0
+          block:
+            - name: "Clean up client VM"
+              include_tasks: ../../common/vm_remove.yml
+              vars:
+                vm_name: "{{ pvrdma_client_vm_name }}"
+                vm_remove_ignore_errors: false
+              when: pvrdma_client_vm_exists | bool
+
+            - name: "Remove VMkernel adapter tag and disable firewall rule for PVRDMA communication"
+              include_tasks: ../../common/esxi_disable_pvrdma_configs.yml
+
+            - name: "Keep the host locked if a server PVRDMA adapter may remain"
+              ansible.builtin.assert:
+                that:
+                  - not pvrdma_server_adapter_pending
+                fail_msg: >-
+                  PVRDMA testing failed; clean up the server adapter before manually
+                  removing /tmp/gosv-pvrdma-network-device-ops.lock on {{ esxi_hostname }}.
+
+            - name: "Release exclusive PVRDMA access on the ESXi host"
+              ansible.builtin.raw: rmdir /tmp/gosv-pvrdma-network-device-ops.lock
+              args:
+                executable: "{{ esxi_shell }}"
+              delegate_to: "{{ esxi_hostname }}"
