@@ -12,11 +12,10 @@
       {%- else -%}Default Switch
       {%- endif -%}
 
-# In this test case we always install the latest EFLOW LTS release
-- name: "Get latest EFLOW LTS download link"
-  include_tasks: ../utils/get_eflow_lts_link.yml
-  vars:
-    win_eflow_releases_file: "{{ current_test_log_folder }}/eflow_releases"
+# Install a fixed EFLOW LTS release.
+- name: "Set fixed EFLOW LTS download link"
+  ansible.builtin.set_fact:
+    eflow_lts_download_link: "https://aka.ms/AzEFLOW-X64-1_5_7_01026"
 
 # Enable VM hardware virtualization exposed to guest firstly
 - name: "Get VM nested hardware virtualization enablement info"
